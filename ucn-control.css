@@ -1,0 +1,18 @@
+
+html, body{
+ heigh: 100%;
+background:#EEE;
+}
+#left {
+width:500px;
+float:left;
+background:#FFE;
+height: 100%;
+}
+
+#right {
+ margin-left: 400px;
+ background: #FFE;
+ height: 100%;
+}
+

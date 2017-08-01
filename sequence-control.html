@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+
+<!-- General style stuff --->  
+<meta charset="UTF-8" /> 
+<title>Sequence Configuration</title>
+<script language="javascript" type="text/javascript" src="../midas.js"></script>
+<script language="javascript" type="text/javascript" src="../mhttpd.js"></script>
+
+<!-- slider JS --->  
+<link rel="stylesheet" href="ucn-control.css" >
+<script>
+
+var gStatusInflight1 = false;
+var gStatusInflight = false;
+function midasStatus(){
+
+  // don't make another request if the last request is still outstanding.
+  if(gStatusInflight){
+    return;
+  }
+
+  gStatusInflight = true;
+
+//            <li> <span id="kicker_status"/> </li>
+	   
+  mjsonrpc_db_get_values(["/Equipment/BeamlineEpics/Variables"]).then(function(rpc) {    
+    var beamlineepics = rpc.result.data[0].measured;
+
+    document.getElementById("1secbeamcur").innerHTML = parseFloat(beamlineepics[18]).toFixed(2);
+    document.getElementById("5minbeamcur").innerHTML = parseFloat(beamlineepics[21]).toFixed(2);
+    if(beamlineepics[32] == 1){
+      document.getElementById("ksm_status").innerHTML = "In ON/OFF sequence"
+    }else{
+      document.getElementById("ksm_status").innerHTML = "Not in ON/OFF sequence"
+    }
+    if(beamlineepics[29] == 1){
+      document.getElementById("beam_on_status").innerHTML = "Target being irradiated"
+    }else{
+      document.getElementById("beam_on_status").innerHTML = "Target not being irradiated"
+    }
+    var ontime = parseFloat(beamlineepics[30])*0.000888;
+    document.getElementById("beamontime").innerHTML = ontime.toFixed(2);
+    var offtime = parseFloat(beamlineepics[31])*0.000888;
+    document.getElementById("beamofftime").innerHTML = offtime.toFixed(2);
+
+    gStatusInflight = false; // finished async routine
+  }).catch(function(error) {
+    if (error.request) {
+      var s = mjsonrpc_decode_error(error);
+      console.log("mjsonrpc_error_alert: " + s);
+    } else {
+      console.log("mjsonroc_error_alert: " + error);
+    }
+  });
+}
+</script>
+</head>
+
+
+<body onload="setInterval(midasStatus,5000);midasStatus()">
+
+
+<div id="left">
+<b>Beam Status</b><br>
+          <ul>
+            <li> <span id="kicker_status"/> </li>
+	    <li> Beam Current: <span id="1secbeamcur"></span>uA (1sec avg), <span id="5minbeamcur"></span> (5-min avg) </li>
+            <li> <span id="ksm_status"/> </li>
+	    <li> Beam on time: <span id="beamontime"></span>sec</li>
+	    <li> Beam off time: <span id="beamofftime"></span>sec</li>
+            <li> <span id="beam_on_status"/> </li>
+          </ul>
+	  Warning: beam variables derived from EPICS and will have 0-20sec lag.
+
+</div>
+
+<div id="right">
+<b>Sequencer Configuration</b><br><br>
+</div>
+<img src="ucn_beamline.png" style="height:400px">
+
+
+</body>
+</html>
+
+

@@ -12,23 +12,33 @@
 <link rel="stylesheet" href="ucn-control.css" >
 <script>
 
+
+
 var gStatusInflight1 = false;
 var gStatusInflight = false;
+// Get the status of ODB variables from beamline epics and sequencer
 function midasStatus(){
 
   // don't make another request if the last request is still outstanding.
-  if(gStatusInflight){
+  if(gStatusInflight && gStatusInFlight1){
     return;
   }
 
   gStatusInflight = true;
+  gStatusInflight1 = true;
 
-//            <li> <span id="kicker_status"/> </li>
-	   
   mjsonrpc_db_get_values(["/Equipment/BeamlineEpics/Variables"]).then(function(rpc) {    
     var beamlineepics = rpc.result.data[0].measured;
 
-    document.getElementById("1secbeamcur").innerHTML = parseFloat(beamlineepics[18]).toFixed(2);
+    if(beamlineepics[1] && beamlineepics[3]){
+      document.getElementById("beamline_status").innerHTML = "UCN beamline enabled (septum/BO are on)";
+      document.getElementById("beamline_status").style.color = 'black';
+    }else{
+       document.getElementById("beamline_status").innerHTML = "UCN beamline disabled (septum or BO are off)";
+      document.getElementById("beamline_status").style.color = 'red';
+    }
+
+    document.getElementById("10secbeamcur").innerHTML = parseFloat(beamlineepics[20]).toFixed(2);
     document.getElementById("5minbeamcur").innerHTML = parseFloat(beamlineepics[21]).toFixed(2);
     if(beamlineepics[32] == 1){
       document.getElementById("ksm_status").innerHTML = "In ON/OFF sequence"
@@ -54,7 +64,88 @@ function midasStatus(){
       console.log("mjsonroc_error_alert: " + error);
     }
   });
+
+  mjsonrpc_db_get_values(["/Equipment/UCNSequencer/Settings"]).then(function(rpc) {    
+    var sequencer = rpc.result.data[0];
+
+    document.getElementById("sequencer_delay").innerHTML = parseFloat(sequencer.delaytime).toFixed(2);
+    document.getElementById("sequencer_opentime").innerHTML = parseFloat(sequencer.valveopentime).toFixed(2);
+    if(sequencer.enable){
+      document.getElementById("seq_enable_b").checked = true;
+      document.getElementById("seq_disable_b").checked = false;
+      document.getElementById("sequencer_enabled").innerHTML = "Sequencer is enabled";
+    }else{
+      document.getElementById("seq_enable_b").checked = false;
+      document.getElementById("seq_disable_b").checked = true;
+      document.getElementById("sequencer_enabled").innerHTML = "Sequencer is disabled";
+    }
+
+    gStatusInflight1 = false; // finished async routine
+  }).catch(function(error) {
+    if (error.request) {
+      var s = mjsonrpc_decode_error(error);
+      console.log("mjsonrpc_error_alert: " + s);
+    } else {
+      console.log("mjsonroc_error_alert: " + error);
+    }
+  });
 }
+
+var gUpdateInflight = false;
+function updateODB(field,ODBName){
+
+  // don't make another request if the last request is still outstanding.
+  if(gUpdateInflight){
+    return;
+  }
+
+	   
+  console.log("Changing " + ODBName + " to " + field.value);
+
+  var newvalue;
+  if(ODBName.includes("enable")){
+    if(field.id == "seq_enable_b"){
+      newvalue = true;
+    }else{
+      newvalue = false;
+    }
+  }else{
+    newvalue = field.value;
+    // Check that new field values are valid
+    if(ODBName.includes("delayTime") && (newvalue < 0 || newvalue > 100)){
+      document.getElementById("error_span").innerHTML = "Invalid value; delay must be between 0-100sec";
+      document.getElementById("error_span").style.color = 'red';
+      document.getElementById("delayInput").value = "";
+      document.getElementById("openTimeInput").value = "";      return;
+    }
+    if(ODBName.includes("OpenTime") && (newvalue < 5 || newvalue > 100)){
+      document.getElementById("error_span").innerHTML = "Invalid value; valve open time must be between 5-100sec";
+      document.getElementById("error_span").style.color = 'red';
+      document.getElementById("delayInput").value = "";
+      document.getElementById("openTimeInput").value = "";
+      return;
+    }
+    document.getElementById("error_span").innerHTML = "";
+  }
+
+  gUpdateInflight = true;  
+  mjsonrpc_db_paste([ODBName],[newvalue]).then(function(rpc) {    
+    document.getElementById("delayInput").value = "";
+    document.getElementById("openTimeInput").value = "";
+    gUpdateInflight = false; // finished async routine
+    midasStatus();
+
+ }).catch(function(error) {
+    if (error.request) {
+      var s = mjsonrpc_decode_error(error);
+      console.log("mjsonrpc_error_alert: " + s);
+    } else {
+      console.log("mjsonroc_error_alert: " + error);
+    }
+  });
+
+}
+
 </script>
 </head>
 
@@ -65,8 +156,8 @@ function midasStatus(){
 <div id="left">
 <b>Beam Status</b><br>
           <ul>
-            <li> <span id="kicker_status"/> </li>
-	    <li> Beam Current: <span id="1secbeamcur"></span>uA (1sec avg), <span id="5minbeamcur"></span> (5-min avg) </li>
+            <li> <span id="beamline_status"/> </li>
+	    <li> Beam Current: <span id="10secbeamcur"></span>uA (10sec avg), <span id="5minbeamcur"></span> (5-min avg) </li>
             <li> <span id="ksm_status"/> </li>
 	    <li> Beam on time: <span id="beamontime"></span>sec</li>
 	    <li> Beam off time: <span id="beamofftime"></span>sec</li>
@@ -78,6 +169,19 @@ function midasStatus(){
 
 <div id="right">
 <b>Sequencer Configuration</b><br><br>
+enable<input type="radio" id="seq_enable_b" onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"> 
+disable<input type="radio" id="seq_disable_b"  onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"><br>
+
+<span id="sequencer_enabled"></span> <br><br>
+Delay after end of irradiation (sec): 
+<input size="8" id="delayInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/delayTime');"/>
+<span id="sequencer_delay"></span> <br>
+Time for UCN valve to stay open (sec): 
+<input size="8" id="openTimeInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/valveOpenTime');"/>
+<span id="sequencer_opentime"></span> <br>
+<span id="error_span"></span> <br>
+<br>
+
 </div>
 <img src="ucn_beamline.png" style="height:400px">
 

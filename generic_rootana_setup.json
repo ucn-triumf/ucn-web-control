@@ -1,0 +1,11 @@
+{ 
+  "He3 Rates" : { 
+    "MaxChannels" : 1,
+    "WebserverName" : {"He3 Rate (300sec)" : "He3_Rate_0_0",
+                       "He3 Rate (600sec)" : "He3_Rate_0_1",
+                       "He3 Rate (1200sec)" : "He3_Rate_0_2",
+                       "He3 Rate (2400sec)" : "He3_Rate_0_3",
+                       "He3 Rate (4800sec)" : "He3_Rate_0_4",
+                       "He3 Rate (9600sec)" : "He3_Rate_0_5"}
+  }
+} 

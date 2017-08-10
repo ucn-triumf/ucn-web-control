@@ -7,5 +7,10 @@
                        "He3 Rate (2400sec)" : "He3_Rate_0_3",
                        "He3 Rate (4800sec)" : "He3_Rate_0_4",
                        "He3 Rate (9600sec)" : "He3_Rate_0_5"}
+  },
+    "He3 Pulse Height" : { 
+    "MaxChannels" : 1,
+    "WebserverName" : "V792_0_0"
   }
+
 } 

@@ -8,14 +8,15 @@
 <script language="javascript" type="text/javascript" src="../midas.js"></script>
 <script language="javascript" type="text/javascript" src="../mhttpd.js"></script>
 
-<!-- slider JS --->  
+<script src="jquery.min.js"></script>
 <link rel="stylesheet" href="ucn-control.css" >
 <script>
 
 
 
-var gStatusInflight1 = false;
 var gStatusInflight = false;
+var gStatusInflight1 = false;
+var gStatusInflight2 = false;
 // Get the status of ODB variables from beamline epics and sequencer
 function midasStatus(){
 
@@ -26,6 +27,7 @@ function midasStatus(){
 
   gStatusInflight = true;
   gStatusInflight1 = true;
+  gStatusInflight2 = true;
 
   mjsonrpc_db_get_values(["/Equipment/BeamlineEpics/Variables"]).then(function(rpc) {    
     var beamlineepics = rpc.result.data[0].measured;
@@ -89,6 +91,36 @@ function midasStatus(){
       console.log("mjsonroc_error_alert: " + error);
     }
   });
+
+  mjsonrpc_cm_exist("fesequencer").then(function(rpc) {    
+    var prog_exist = rpc.result.status;
+    console.log("sequence exist " + prog_exist);
+
+    if(prog_exist == 1){
+      $(".sequenceCtlEl").prop('disabled', false);
+      document.getElementById("error_span").innerHTML = "";
+      document.getElementById("error_span").style.color = 'black';
+    }else{
+      $(".sequenceCtlEl").prop('disabled', true);
+      document.getElementById("error_span").innerHTML = "UCNSequencer program not running.\n Cannot control PPG.";
+      document.getElementById("error_span").style.color = 'red';
+    }
+//    document.getElementById("sequencer_delay").innerHTML = parseFloat(.delaytime).toFixed(2);
+
+
+
+
+    gStatusInflight2 = false; // finished async routine
+  }).catch(function(error) {
+    if (error.request) {
+      var s = mjsonrpc_decode_error(error);
+      console.log("mjsonrpc_error_alert: " + s);
+    } else {
+      console.log("mjsonroc_error_alert: " + error);
+    }
+  });
+
+
 }
 
 var gUpdateInflight = false;
@@ -169,15 +201,15 @@ function updateODB(field,ODBName){
 
 <div id="right">
 <b>Sequencer Configuration</b><br><br>
-enable<input type="radio" id="seq_enable_b" onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"> 
-disable<input type="radio" id="seq_disable_b"  onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"><br>
+enable<input class="sequenceCtlEl" type="radio" id="seq_enable_b" onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"> 
+disable<input class="sequenceCtlEl" type="radio" id="seq_disable_b"  onclick="updateODB(this,'/Equipment/UCNSequencer/Settings/enable');"><br>
 
 <span id="sequencer_enabled"></span> <br><br>
 Delay after end of irradiation (sec): 
-<input size="8" id="delayInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/delayTime');"/>
+<input class="sequenceCtlEl" size="8" id="delayInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/delayTime');"/>
 <span id="sequencer_delay"></span> <br>
 Time for UCN valve to stay open (sec): 
-<input size="8" id="openTimeInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/valveOpenTime');"/>
+<input class="sequenceCtlEl" size="8" id="openTimeInput" onchange="updateODB(this,'/Equipment/UCNSequencer/Settings/valveOpenTime');"/>
 <span id="sequencer_opentime"></span> <br>
 <span id="error_span"></span> <br>
 <br>

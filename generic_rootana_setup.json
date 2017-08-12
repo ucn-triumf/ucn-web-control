@@ -11,6 +11,10 @@
     "He3 Pulse Height" : { 
     "MaxChannels" : 1,
     "WebserverName" : "V792_0_0"
+  },
+    "He3 Counts" : { 
+    "MaxChannels" : 1,
+    "WebserverName" : "He3_Counts_0_0"
   }
 
 } 

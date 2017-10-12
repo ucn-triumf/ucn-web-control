@@ -8,6 +8,11 @@ import fileinput
 
 """
 This class deals with populating the runlog.txt file with a summary of each run.
+
+T. Lindner
+Aug 2017
+
+Script adapted from examples from Lars Martin and Tom Feusels
 """
 
 

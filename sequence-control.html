@@ -52,9 +52,9 @@ function midasStatus(){
     }else{
       document.getElementById("beam_on_status").innerHTML = "Target not being irradiated"
     }
-    var ontime = parseFloat(beamlineepics[30])*0.000888;
+    var ontime = parseFloat(beamlineepics[30])*0.000888111;
     document.getElementById("beamontime").innerHTML = ontime.toFixed(2);
-    var offtime = parseFloat(beamlineepics[31])*0.000888;
+    var offtime = parseFloat(beamlineepics[31])*0.000888111;
     document.getElementById("beamofftime").innerHTML = offtime.toFixed(2);
 
     gStatusInflight = false; // finished async routine

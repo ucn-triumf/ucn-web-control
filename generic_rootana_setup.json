@@ -10,11 +10,13 @@
   },
     "He3 Pulse Height" : { 
     "MaxChannels" : 1,
-    "WebserverName" : "V792_0_0"
+    "WebserverName" : "He3_Charge_0_0"
   },
-    "He3 Counts" : { 
+    "He3 Hits Sequenced" : { 
     "MaxChannels" : 1,
-    "WebserverName" : "He3_Counts_0_0"
+    "WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_he3",
+		       "UCN Hits with this cycle" : "hitsinsequence_he3"}
+		       
   }
 
 } 

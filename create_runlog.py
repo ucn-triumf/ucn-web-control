@@ -81,8 +81,16 @@ class runlog:
 
     beamon_time = odb['Equipment']['BeamlineEpics']['Variables']['Measured'][30] *0.000888111
     valveopen_time = odb['Equipment']['UCNSequencer']['Settings']['valveOpenTime']
-    he3_events = odb['Equipment']['FEV785']['Statistics']['Events sent']
-    li6_events = odb['Equipment']['FEV1720I']['Statistics']['Events sent']
+    he3_events = 0
+    li6_events = 0
+    if 'FEV785' in odb['Equipment']:
+      he3_events = odb['Equipment']['FEV785']['Statistics']['Events sent']
+    else:
+      he3_events = odb['Equipment']['HE3_Detector']['Statistics']['Events sent']
+    if 'FEV1720I' in odb['Equipment']:
+      li6_events = odb['Equipment']['FEV1720I']['Statistics']['Events sent']
+    else:
+      li6_events = odb['Equipment']['Li6_Detector']['Statistics']['Events sent']
 
     comment = "*NO COMMENT FIELD*"
     if "Edit on start" in odb['Experiment']:

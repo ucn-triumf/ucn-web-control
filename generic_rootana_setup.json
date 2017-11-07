@@ -1,22 +1,37 @@
 { 
-  "He3 Rates" : { 
-    "MaxChannels" : 1,
-    "WebserverName" : {"He3 Rate (300sec)" : "He3_Rate_0_0",
-                       "He3 Rate (600sec)" : "He3_Rate_0_1",
-                       "He3 Rate (1200sec)" : "He3_Rate_0_2",
-                       "He3 Rate (2400sec)" : "He3_Rate_0_3",
-                       "He3 Rate (4800sec)" : "He3_Rate_0_4",
-                       "He3 Rate (9600sec)" : "He3_Rate_0_5"}
-  },
-    "He3 Pulse Height" : { 
-    "MaxChannels" : 1,
-    "WebserverName" : "He3_Charge_0_0"
-  },
+    "Li6 Rates" : { 
+	"MaxChannels" : 1,
+	"WebserverName" : {"Li6 Rate (300sec)" : "Li6_Rate_0_0",
+			   "Li6 Rate (600sec)" : "Li6_Rate_0_1",
+			   "Li6 Rate (1200sec)" : "Li6_Rate_0_2",
+			   "Li6 Rate (2400sec)" : "Li6_Rate_0_3",
+			   "Li6 Rate (4800sec)" : "Li6_Rate_0_4",
+			   "Li6 Rate (9600sec)" : "Li6_Rate_0_5"}
+    },
+    "Li6 Hits Sequenced" : { 
+	"MaxChannels" : 1,
+	"WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_li6",
+			   "UCN Hits with this cycle" : "hitsinsequence_li6"}		       
+    },
+    "He3 Rates" : { 
+	"MaxChannels" : 1,
+	"WebserverName" : {"He3 Rate (300sec)" : "He3_Rate_0_0",
+			   "He3 Rate (600sec)" : "He3_Rate_0_1",
+			   "He3 Rate (1200sec)" : "He3_Rate_0_2",
+			   "He3 Rate (2400sec)" : "He3_Rate_0_3",
+			   "He3 Rate (4800sec)" : "He3_Rate_0_4",
+			   "He3 Rate (9600sec)" : "He3_Rate_0_5"}
+    },
     "He3 Hits Sequenced" : { 
-    "MaxChannels" : 1,
-    "WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_he3",
-		       "UCN Hits with this cycle" : "hitsinsequence_he3"}
-		       
-  }
+	"MaxChannels" : 1,
+	"WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_he3",
+			   "UCN Hits with this cycle" : "hitsinsequence_he3"}
+	
+    },
+    "V1720 Details" : { 
+	"MaxChannels" : 8,
+	"MaxModules" : 2,
+	"WebserverName" : "V1720PSDQL"
+    }
 
 } 

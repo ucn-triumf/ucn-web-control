@@ -11,7 +11,8 @@
     "Li6 Hits Sequenced" : { 
 	"MaxChannels" : 1,
 	"WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_li6",
-			   "UCN Hits with this cycle" : "hitsinsequence_li6"}		       
+			   "UCN Hits with this cycle" : "hitsinsequence_li6",
+			   "UCN Hits per cycle" : "hits_per_cycle_li6"}		       
     },
     "He3 Rates" : { 
 	"MaxChannels" : 1,
@@ -25,8 +26,8 @@
     "He3 Hits Sequenced" : { 
 	"MaxChannels" : 1,
 	"WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_he3",
-			   "UCN Hits with this cycle" : "hitsinsequence_he3"}
-	
+			   "UCN Hits with this cycle" : "hitsinsequence_he3",
+			   "UCN Hits per cycle" : "hits_per_cycle_he3"}		       	
     },
     "V1720 Details" : { 
 	"MaxChannels" : 8,

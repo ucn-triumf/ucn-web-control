@@ -144,14 +144,14 @@ function updateODB(field,ODBName){
   }else{
     newvalue = field.value;
     // Check that new field values are valid
-    if(ODBName.includes("delayTime") && (newvalue < 0 || newvalue > 100)){
-      document.getElementById("error_span").innerHTML = "Invalid value; delay must be between 0-100sec";
+    if(ODBName.includes("delayTime") && (newvalue < 0 || newvalue > 1000)){
+      document.getElementById("error_span").innerHTML = "Invalid value; delay must be between 0-1000sec";
       document.getElementById("error_span").style.color = 'red';
       document.getElementById("delayInput").value = "";
       document.getElementById("openTimeInput").value = "";      return;
     }
-    if(ODBName.includes("OpenTime") && (newvalue < 5 || newvalue > 100)){
-      document.getElementById("error_span").innerHTML = "Invalid value; valve open time must be between 5-100sec";
+    if(ODBName.includes("OpenTime") && (newvalue < 5 || newvalue > 1000)){
+      document.getElementById("error_span").innerHTML = "Invalid value; valve open time must be between 5-1000sec";
       document.getElementById("error_span").style.color = 'red';
       document.getElementById("delayInput").value = "";
       document.getElementById("openTimeInput").value = "";

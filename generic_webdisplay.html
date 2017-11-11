@@ -232,7 +232,7 @@ function selectHistogramsFromJSON(){
       
       <!-- find the configuration for this button -->
       setRootanaDirectory(this.id);
-
+      find_active_root_directory();
       ShowParams();
       updatePlots(true);
    });
@@ -407,16 +407,14 @@ function changeUpdateTime() {
 
          <font size="6"><b>UCN Web Display</b></font><br><br>
 
-         <div id="triggerSelectionDiv" style="display:none"> 
-          DTM Source: 
-          <button class="triggerControlEl select_buttons selected" id="rootana_physics" > 
-          Physics Trigger </button>
-          <button class="triggerControlEl select_buttons" id="rootana_dnf" > 
-          Periodic DNF </button>
-          <button class="triggerControlEl select_buttons" id="rootana_dnrates" > 
-          Periodic Dark Noise </button>
+         <div id="triggerSelectionDiv" > 
+           
+          <button class="triggerControlEl select_buttons selected" id="rootana" > 
+          Current Run </button>
+          <button class="triggerControlEl select_buttons" id="rootana_persist" > 
+          Persistent </button>
       
-         </div>      
+         </div> <br>
           <b>Histogram Groups: </b><br>
 
           <div id="displayControlButtons"></div> <br>

@@ -10,9 +10,14 @@
     },
     "Li6 Hits Sequenced" : { 
 	"MaxChannels" : 1,
-	"WebserverName" : {"UCN Hits within cycles" : "hitsinsequencecumul_li6",
-			   "UCN Hits with this cycle" : "hitsinsequence_li6",
-			   "UCN Hits per cycle" : "hits_per_cycle_li6"}		       
+	"WebserverName" : {
+	    "UCN Hits within cycles (valve open)" : "hitsinsequencecumul_li6_intime",
+	    "UCN Hits with this cycle (valve open)" : "hitsinsequence_li6_intime",
+	    "UCN Hits per cycle (valve open)" : "hits_per_cycle_li6_intime",
+	    "UCN Hits within cycles" : "hitsinsequencecumul_li6",
+	    "UCN Hits with this cycle" : "hitsinsequence_li6",
+	    "UCN Hits per cycle" : "hits_per_cycle_li6"
+			  }		       
     },
     "He3 Rates" : { 
 	"MaxChannels" : 1,

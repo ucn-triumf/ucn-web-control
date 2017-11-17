@@ -40,6 +40,7 @@ function midasStatus(){
       document.getElementById("beamline_status").style.color = 'red';
     }
 
+    document.getElementById("1vextractcur").innerHTML = parseFloat(beamlineepics[38]).toFixed(2);
     document.getElementById("10secbeamcur").innerHTML = parseFloat(beamlineepics[20]).toFixed(2);
     document.getElementById("5minbeamcur").innerHTML = parseFloat(beamlineepics[21]).toFixed(2);
     if(beamlineepics[32] == 1){
@@ -189,7 +190,8 @@ function updateODB(field,ODBName){
 <b>Beam Status</b><br>
           <ul>
             <li> <span id="beamline_status"/> </li>
-	    <li> Beam Current: <span id="10secbeamcur"></span>uA (10sec avg), <span id="5minbeamcur"></span> (5-min avg) </li>
+	    <li> BL1 Extraction Current: <span id="1vextractcur"></span>uA </li>
+	    <li> BL1U Beam Current: <span id="10secbeamcur"></span>uA (10sec avg), <span id="5minbeamcur"></span> (5-min avg) </li>
             <li> <span id="ksm_status"/> </li>
 	    <li> Beam on time: <span id="beamontime"></span>sec</li>
 	    <li> Beam off time: <span id="beamofftime"></span>sec</li>

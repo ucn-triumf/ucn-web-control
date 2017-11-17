@@ -55,14 +55,15 @@ class runlog:
         )
 
     htmlfile.write('<table id="nicetable">\n')
-    htmlfile.write('<tr> <td> Run Number </td>  <td> Start </td> <td> End Time </td>\n')
+    #htmlfile.write('<tr> <td> Run Number </td>  <td> Start </td> <td> End Time </td>\n')
+    htmlfile.write('<tr> <td> Run </td>  <td> Start </td>\n')
     htmlfile.write('<td> <pre> Beamline \n enabled?</pre> </td> \n')
     htmlfile.write('<td> <pre> Beam on \n time (s)</pre> </td> \n')
     htmlfile.write('<td> <pre> UCN Valve \n open (s)</pre> </td> \n')
-    htmlfile.write('<td> He-3 events </td>  <td> Li-6 events </td> <td> Comments </td> </tr>\n')
+    htmlfile.write('<td> He-3 \n events </td>  <td> Li-6 \n events </td> <td> UCN Experiment </td><td> Shifters </td> <td> Comments </td> </tr>\n')
     
-    txtfile.write("Run number, Start/End Time, Beamline enabled?, Beam on time, UCN Valve Open, ")
-    txtfile.write("He-3 events, Li-6 events, Comments")
+    txtfile.write("Run number, Start Time, Beamline enabled?, Beam on time, UCN Valve Open, ")
+    txtfile.write("He-3 events, Li-6 events, UCN Experiment, Shifter, Comments")
     return
 
   def writecolumn(self,htmlfile,txtfile,value):
@@ -93,18 +94,26 @@ class runlog:
       li6_events = odb['Equipment']['Li6_Detector']['Statistics']['Events sent']
 
     comment = "*NO COMMENT FIELD*"
+    ucn_experiment = ""
+    shifters = ""
     if "Edit on start" in odb['Experiment']:
       comment = odb['Experiment']['Edit on start']['Comment']
+      if "Experiment number" in odb['Experiment']['Edit on start']:
+        ucn_experiment = odb['Experiment']['Edit on start']['Experiment number']
+      if "Shifters" in odb['Experiment']['Edit on start']:
+        shifters = odb['Experiment']['Edit on start']['Shifters']
 
     htmlfile.write("<tr>")
     self.writecolumn(htmlfile,txtfile,str(run_number))
     self.writecolumn(htmlfile,txtfile,str(start_time))
-    self.writecolumn(htmlfile,txtfile,str(stop_time))
+    #self.writecolumn(htmlfile,txtfile,str(stop_time))
     self.writecolumn(htmlfile,txtfile,beamline_enabled)
     self.writecolumn(htmlfile,txtfile,str(round(beamon_time,2)))
     self.writecolumn(htmlfile,txtfile,str(valveopen_time))
     self.writecolumn(htmlfile,txtfile,str(he3_events))
     self.writecolumn(htmlfile,txtfile,str(li6_events))
+    self.writecolumn(htmlfile,txtfile,ucn_experiment)
+    self.writecolumn(htmlfile,txtfile,shifters)
     self.writecolumn(htmlfile,txtfile,comment)
     htmlfile.write("</tr>\n")
 

@@ -26,6 +26,7 @@ class runlog:
         " <html>\n "
         "\n"
         "<head>\n"
+	"<meta http-equiv='refresh' content='60'>\n "
         "<style>\n"
         "table {\n"
         "    width:100%;\n"

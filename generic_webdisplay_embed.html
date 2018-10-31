@@ -8,7 +8,7 @@
   <!--  <meta charset="UTF-8"> -->
 
   <meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=Edge"/>
-  <title>Generic DAQ Web Display</title>
+  <title>UCN  Web Display</title>
   <script language="javascript" type="text/javascript" src="mhttpd.js"></script>
   <script language="javascript" type="text/javascript" src="midas.js"></script>
   <script language="javascript" type="text/javascript" src="controls.js"></script>
@@ -426,7 +426,7 @@ function changeUpdateTime() {
 </head>
 
 <!-- the setRootanDirectory will call to find_active_root_directory will take a moment to do the first read of ROOT tree; so wait 2sec before doing first call to plot -->
-<body  class="mcss" onload="mhttpd_init('webdisplay');initialize();setRootanaDirectory('rootana');find_active_root_directory(false);selectHistogramsFromJSON(); midasStatus(); updatePlots(false);">
+<body  class="mcss" onload="mhttpd_init('OnlineDisplay');initialize();setRootanaDirectory('rootana');find_active_root_directory(false);selectHistogramsFromJSON(); midasStatus(); updatePlots(false);">
 
   <!-- <body  class="mcss" onload="initialize();setRootanaDirectory('rootana');find_active_root_directory(false);selectHistogramsFromJSON(); midasStatus();mhttpd_init('webdisplay');updatePlots(false); "> --> 
 

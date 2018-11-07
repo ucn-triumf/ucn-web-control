@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="mcss">
+<head>
+   <meta charset="UTF-8">
+   <link rel="stylesheet" href="midas.css">
+   <script src="controls.js"></script>
+   <script src="jquery.min.js"></script>
+   <script src="midas.js"></script>
+   <script src="mhttpd.js"></script>
+   <title>Experiment Notes</title>
+   <style>
+
+    /* Left / right columns based on this page:
+       https://www.w3schools.com/html/tryit.asp?filename=tryhtml_layout_float
+       */
+
+    leftcolumn {
+      float: left;
+      width: 25%;
+      padding: 3px;
+    }
+
+
+    rightcolumn {
+      float: left;
+      padding: 3px;
+      width: 45%;
+    }
+
+    column1 {
+      float: left;
+      width: 40%;
+      padding: 3px;
+    }
+
+
+    column2 {
+      float: left;
+      padding: 3px;
+      width: 80%;
+    }
+
+    column3 {
+      float: left;
+      padding: 3px;
+      width: 26%;
+    }
+
+    doublecolumn {
+      float: left;
+      padding: 3px;
+      width: 88%;
+    }
+
+    /* Clear floats after the columns */
+    section:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    /* Make the cells dark is they are unused*/
+    /*    .UnavailableCells {      background-color: blue;     } */
+
+    .blink {
+      animation: blink-animation 1s steps(5, start) infinite;
+      -webkit-animation: blink-animation 1s steps(5, start) infinite;
+    }
+    @keyframes blink-animation {
+      to {
+	visibility: hidden;
+      }
+    }
+    @-webkit-keyframes blink-animation {
+      to {
+	visibility: hidden;
+      }
+    }
+
+   </style>
+
+</head>
+
+
+
+<body class="mcss" onload="mhttpd_init('ExperimentNotes')">
+
+<!-- header and side navigation will be filled in mhttpd_start -->
+<div id="mheader"></div>
+<div id="msidenav"></div>
+
+<div id="mmain">
+
+  <section>
+
+    <column2>
+      <table class="mtable">
+        <tr>
+          <th colspan="2" class="mtableheader">Notes about Experimental Configuration</th>
+        </tr>
+
+        <tr>
+          <td> Experiment Number </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Experiment number" data-odb-editable="1"></div>  </td>
+	</tr>
+
+
+        <tr>
+          <td style="width: 250px;"> Valve 1 State </td>
+          <td style="width: 700px;"> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve1State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 3 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve3State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 4 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve4State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 5 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve5State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 6 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve6State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 7 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve7State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Valve 8 State </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/Valve8State" data-odb-editable="1"></div>  </td>
+	</tr>
+
+        <tr>
+          <td> Setup Note 1 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote1" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 2 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote2" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 3 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote3" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 4 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote4" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 5 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote5" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 6 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote6" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 7 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote7" data-odb-editable="1"></div>  </td>
+	</tr>
+        <tr>
+          <td> Setup Note 8 </td>
+          <td> <div  name="modbvalue" data-odb-path="/Experiment/Edit on start/SetupNote8" data-odb-editable="1"></div>  </td>
+	</tr>
+
+
+
+
+      </table>
+    </column2>
+
+
+  </section>
+
+</body>
+</html>

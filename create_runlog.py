@@ -85,12 +85,18 @@ class runlog:
     valveopen_time = odb['Equipment']['UCNSequencer']['Settings']['valveOpenTime']
     he3_events = 0
     li6_events = 0
-    if 'FEV785' in odb['Equipment']:
+    if 'V785' in odb['Equipment']:
       he3_events = odb['Equipment']['FEV785']['Statistics']['Events sent']
+    elif 'V1725_Slow' in odb['Equipment']:
+      if 'TUC0' in odb['Equipment']['V1725_Slow']['Variables']:
+        he3_events = odb['Equipment']['V1725_Slow']['Variables']['TUC0'][1]    
     else:
       he3_events = odb['Equipment']['HE3_Detector']['Statistics']['Events sent']
     if 'FEV1720I' in odb['Equipment']:
       li6_events = odb['Equipment']['FEV1720I']['Statistics']['Events sent']
+    elif 'V1725_Slow' in odb['Equipment']:
+      if 'TUC0' in odb['Equipment']['V1725_Slow']['Variables']:
+        li6_events = odb['Equipment']['V1725_Slow']['Variables']['TUC0'][0]    
     else:
       li6_events = odb['Equipment']['Li6_Detector']['Statistics']['Events sent']
 

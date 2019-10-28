@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html class="mcss">
+<head>
+   <meta charset="UTF-8">
+   <link rel="stylesheet" href="midas.css">
+   <script src="controls.js"></script>
+   <script src="jquery.min.js"></script>
+   <script src="midas.js"></script>
+   <script src="mhttpd.js"></script>
+   <title>Online Analysis</title> 
+   <style>
+ 
+   </style>
+
+   var run_list;
+   <script>
+
+   var current_run = "runXXX";
+
+   function changeRun() {
+      // Change the pictures to the picture for the selected run.
+      var x = document.getElementById("RunSelection").value;
+      document.getElementById("demo").innerHTML = "Selected: " + x;
+      document.getElementById('Li6StorageBackground').src = "online_analysis_plots/"+x+"/Li6StorageBackground.png?random="+new Date().getTime();
+      document.getElementById('He3StorageBackground').src = "online_analysis_plots/"+x+"/He3StorageBackground.png?random="+new Date().getTime();
+      document.getElementById('He3Storage').src = "online_analysis_plots/"+x+"/He3Storage.png?random="+new Date().getTime();
+      document.getElementById('Li6_PSD_vs_QL').src = "online_analysis_plots/"+x+"/Li6_PSD_vs_QL.png?random="+new Date().getTime();
+      console.log("Set to " + x);
+   }
+
+
+   function get_run_list(){
+
+      // Update the list of available runs every couple seconds using the JSON list of runs.      
+      <!-- get the data used to do setup -->
+      var request = new XMLHttpRequest();
+      request.open('GET', "online_analysis_plots/list_runs.json?random="+new Date().getTime(), false);
+      request.send(null);
+      
+      if(request.status != 200){ 
+         console.log("Couldn't get run list ");
+         return;                                                  
+      }    
+      
+      run_list = JSON.parse(request.responseText)["Run List"];
+
+
+      // Update the selection for the new list of runs.
+      var oldSel = document.getElementById('RunSelection');
+      var original_value = oldSel.value;
+
+      // delete old options from select
+      while (oldSel.options.length > 0) {
+         oldSel.remove(oldSel.options.length - 1);
+      }
+
+      // Add new options to select
+      for (i = 0; i < run_list.length; i++)
+      {
+         var opt = document.createElement('option');
+         opt.text = run_list[i];
+         opt.value = run_list[i];
+         oldSel.add(opt, null);
+      }
+
+      // Set the value back to what it was originally (if original value was sensible)
+      if(original_value != "runXXX"){
+         oldSel.value = original_value;
+      }else{
+         console.log("Using " + oldSel.value + " as starting run");
+      }
+      current_run=oldSel.value;
+
+      // Update plots
+      changeRun();
+   }
+      
+   
+   setInterval(get_run_list,5000);   
+   </script>
+
+</head>
+
+
+
+<body class="mcss" onload="mhttpd_init('Online Analysis'); get_run_list();changeRun();">
+
+<!-- header and side navigation will be filled in mhttpd_start -->
+<div id="mheader"></div>
+<div id="msidenav"></div>
+
+<div id="mmain">
+
+
+  <select id="RunSelection" onchange="changeRun()">
+    <option value="runXXX">runXXX</option>
+  </select>
+
+
+  <p id="demo"> 
+    
+  </p>
+  <br>
+  
+  <img id="Li6StorageBackground" src="" alt="Plot not available">
+  <img id="He3StorageBackground" src="" alt="Plot not available">
+  <img id="He3Storage" src="" alt="Plot not available">
+  <img id="Li6_PSD_vs_QL" src="" alt="Plot not availablei">
+
+
+</body>
+</html>

@@ -21,13 +21,16 @@
       // Change the pictures to the picture for the selected run.
       var x = document.getElementById("RunSelection").value;
       document.getElementById("demo").innerHTML = "Selected: " + x;
+      document.getElementById('TransmissionWithPreStorage').src = "online_analysis_plots/"+x+"/TransmissionWithPreStorage.png?random="+new Date().getTime();
+      document.getElementById('TransmissionDuringIrradiation').src = "online_analysis_plots/"+x+"/TransmissionDuringIrradiation.png?random="+new Date().getTime();
+      document.getElementById('Li6Storage').src = "online_analysis_plots/"+x+"/Li6Storage.png?random="+new Date().getTime();
+      document.getElementById('He3Storage').src = "online_analysis_plots/"+x+"/He3Storage.png?random="+new Date().getTime();
+      document.getElementById('StorageWithMonitorAfterIrradiation').src = "online_analysis_plots/"+x+"/StorageWithMonitorAfterIrradiation.png?random="+new Date().getTime();
       document.getElementById('Li6StorageBackground').src = "online_analysis_plots/"+x+"/Li6StorageBackground.png?random="+new Date().getTime();
       document.getElementById('He3StorageBackground').src = "online_analysis_plots/"+x+"/He3StorageBackground.png?random="+new Date().getTime();
-      document.getElementById('He3Storage').src = "online_analysis_plots/"+x+"/He3Storage.png?random="+new Date().getTime();
       document.getElementById('Li6_PSD_vs_QL').src = "online_analysis_plots/"+x+"/Li6_PSD_vs_QL.png?random="+new Date().getTime();
-      console.log("Set to " + x);
+     
    }
-
 
    function get_run_list(){
 
@@ -102,9 +105,13 @@
   </p>
   <br>
   
+  <img id="TransmissionWithPreStorage" src="" alt="Plot not available">
+  <img id="TransmissionDuringIrradiation" src="" alt="Plot not available">
+  <img id="Li6Storage" src="" alt="Plot not available">
+  <img id="He3Storage" src="" alt="Plot not available">
+  <img id="StorageWithMonitorAfterIrradiation" src="" alt="Plot not available">
   <img id="Li6StorageBackground" src="" alt="Plot not available">
   <img id="He3StorageBackground" src="" alt="Plot not available">
-  <img id="He3Storage" src="" alt="Plot not available">
   <img id="Li6_PSD_vs_QL" src="" alt="Plot not availablei">
 
 

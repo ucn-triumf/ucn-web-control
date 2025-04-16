@@ -1,0 +1,1397 @@
+<!--
+    Device status midas page: show which devices have status on
+    Derek Fujimoto
+    Apr 2025
+-->
+
+<!DOCTYPE html>
+<html class="mcss">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="midas.css">
+    <script src="controls.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="midas.js"></script>
+    <script src="mhttpd.js"></script>
+    <title>Device Status</title>
+    <style>
+        column1 {
+            float: left;
+            padding: 5px;
+        }
+        table {
+            width: 100%;
+        }
+
+    </style>
+    <script>
+
+        // list all equipment from which you want to fetch data
+        var equipments = ['/Equipment/BeamlineEpics',
+                          '/Equipment/UCN2Epics',
+                          '/Equipment/UCN2EpicsPhase3',
+                          '/Equipment/UCN2EpPha5Oth',
+                          '/Equipment/UCN2EpPha5Tmp',
+                          '/Equipment/UCN2EpicsTemperature',
+                          '/Equipment/UCN2EpicsPressures',
+                          '/Equipment/UCN2EpicsOthers',
+                          '/Equipment/UCN2EpicsPhase2B',
+                          '/Equipment/UCN2EpPha5Pre',
+                          '/Equipment/UCN2EpPha5Last',
+                          '/Equipment/UCN2EpicsOthers',
+                          '/Equipment/UCN2Pur',
+                          ];
+
+        // all table names, add or sort this array to add or sort tables
+        var table_names = ['ISO', 'HE3', 'HE4', 'LD2',
+                           'VAC', 'B1U', 'Misc', ];
+
+        // normaly open valves need to invert their status
+        var inverted_devices = [
+            //'HE3:AV108:STATON',
+            //'HE4:AV203:STATON',
+            'ISO:AV001:STATON',
+            //'ISO:AV024:STATON', // are these actually normally open?
+            //'ISO:AV025:STATON',
+            //'ISO:AV026:STATON',
+            ];
+
+        // devices which should be on for each mode of operation
+        // note: if you want to add keys to this dict, you need to add checkboxes
+        //      to the table at the end of this file (without the _ON or _OFF).
+        // note2: you need to have both _ON and _OFF versions of the key
+        var operation_groups = {
+            'vacuum_ON':[
+                'LD2:AV332:STATON',
+                'LD2:BP330:STATON',
+                'LD2:IG330:STATON',
+                'LD2:GV330:STATON',
+                'LD2:TP330:STATON',
+                'VAC:BP801:STATON',
+                'VAC:GV801:STATON',
+                'VAC:IG801:STATON',
+                'VAC:PV801:STATON',
+                'VAC:TP801:STATON',
+                'ISO:IV001:STATON',
+                ],
+            'vacuum_OFF':[],
+            'purify_return_ON':[
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV012:STATON',
+                'ISO:AV014:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:BP001:STATON',
+                'ISO:IV001:STATON',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                ],
+            'purify_return_OFF':[
+                'ISO:AV009:STATON',
+                'ISO:AV032:STATON',
+                ],
+            'purify_input_ON':[
+                'ISO:AV001:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV030:STATON',
+                ],
+            'purify_input_OFF':[
+                'ISO:AV009:STATON',
+                'ISO:AV032:STATON',
+                ],
+            'purify_regen_ON':[
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV032:STATON',
+                'ISO:BP002:STATON',
+                ],
+            'purify_regen_OFF':[
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV030:STATON',
+                ],
+            'nat_he_pump_623_ON':[
+                'HE4:AV203:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:CRV201:STATON',
+                ],
+            'nat_he_pump_623_OFF':[
+                'HE4:FPV212:STATON',
+                ],
+            '1K_pump_624_ON':[
+                'HE4:AV201:STATON',
+                'HE4:AV203:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:GV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            '1K_pump_624_OFF':[
+                'HE4:FPV212:STATON',
+                ],
+            'he3_pump_625_ON':[
+                'HE3:AV102:STATON',
+                'HE3:AV104:STATON',
+                'HE3:AV113:STATON',
+                'HE3:AV114:STATON',
+                'HE3:AV125:STATON',
+                'HE3:AV126:STATON',
+                'HE3:AV129:STATON',
+                'HE3:AV135:STATON',
+                'HE3:AV136:STATON',
+                'HE3:BP101:STATON',
+                'HE3:BP102:STATON',
+                'HE3:BP103:STATON',
+                'HE3:FPV101:STATON',
+                'HE3:GV101:STATON',
+                'HE3:GV102:STATON',
+                'HE3:MP101:STATON',
+                'HE3:MP102:STATON',
+                'HE3:TP101:STATON',
+                ],
+            'he3_pump_625_OFF':[
+                'HE3:AV105:STATON',
+                'HE3:AV107:STATON',
+                'HE3:AV108:STATON',
+                'HE3:AV109:STATON',
+                'HE3:AV110:STATON',
+                'HE3:AV111:STATON',
+                'HE3:AV112:STATON',
+                'HE3:AV122:STATON',
+                'HE3:AV123:STATON',
+                'HE3:AV124:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'HE3:MFC101:STATON',
+                ],
+            'iso_pump_626_ON':[
+                'ISO:AV001:STATON',
+                'ISO:AV002:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV032:STATON',
+                'ISO:BP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            'iso_pump_626_OFF':[
+                'HE3:AV111:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                ],
+            'baking_627_ON':[
+                'ISO:IG002:STATON',
+                'ISO:HTR001:STATON',
+                'ISO:HTR003:STATON',
+                'ISO:HTR004:STATON',
+                'ISO:HTR005:STATON',
+                'ISO:HTR006:STATON',
+                'ISO:HTR007:STATON',
+                'ISO:HTR008:STATON',
+                ],
+            'baking_627_OFF':[],
+            'backfill_629_ON':[
+                'HE4:AV201:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:GV201:STATON',
+                ],
+            'backfill_629_OFF':[
+                'HE4:AV203:STATON',
+                'HE4:FPV212:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            'warm3He_631_ON':[
+                'HE3:AV105:STATON',
+                'HE3:AV107:STATON',
+                'HE3:AV108:STATON',
+                'HE3:AV109:STATON',
+                'HE3:AV111:STATON',
+                'HE3:AV112:STATON',
+                'HE3:AV113:STATON',
+                'HE3:AV114:STATON',
+                'HE3:AV125:STATON',
+                'HE3:AV126:STATON',
+                'HE3:AV129:STATON',
+                'HE3:AV130:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'HE3:AV135:STATON',
+                'HE3:AV136:STATON',
+                'HE3:BP101:STATON',
+                'HE3:BP102:STATON',
+                'HE3:FPV101:STATON',
+                'HE3:GV101:STATON',
+                'HE3:GV102:STATON',
+                'HE3:MFC101:STATON',
+                'HE3:MP101:STATON',
+                'HE3:MP102:STATON',
+                ],
+            'warm3He_631_OFF':[
+                'HE3:AV102:STATON',
+                'HE3:AV104:STATON',
+                'HE3:AV106:STATON',
+                'HE3:AV110:STATON',
+                'HE3:AV122:STATON',
+                'HE3:AV123:STATON',
+                'HE3:AV124:STATON',
+                'HE3:AV127:STATON',
+                'HE3:AV132:STATON',
+                'HE3:BP103:STATON',
+                'HE3:PV101:STATON',
+                'HE3:TP101:STATON',
+                ],
+            'warmIso_633_ON':[
+                'ISO:AV001:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV014:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV030:STATON',
+                'ISO:BP001:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                'ISO:PR001:STATON',
+                ],
+            'warmIso_633_OFF':[
+                'ISO:AV002:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV028:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV032:STATON',
+                'ISO:BP002:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            '4Kfill_651_ON':[
+                'HE4:AV201:STATON',
+                'HE4:AV202:STATON',
+                'HE4:AV204:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:FPV204:STATON',
+                'HE4:FPV205:STATON',
+                'HE4:FPV206:STATON',
+                'HE4:FPV207:STATON',
+                'HE4:FPV208:STATON',
+                'HE4:FPV209:STATON',
+                'HE4:FPV211:STATON',
+                'HE4:FPV211:STAT.B8',
+                'HE4:FPV212:STATON',
+                'HE4:HTR206:STATLOC',
+                'HE4:HTR207:STATLOC',
+                'HE4:HTR208:STATLOC',
+                'HE4:HTR209:STATLOC',
+                'HE4:HTR210:STATLOC',
+                'HE4:HTR211:STATLOC',
+                'HE4:HTR212:STATLOC',
+                'HE4:HTR213:STATLOC',
+                'HE4:HTR214:STATLOC',
+                'HE4:GV201:STATON',
+                ],
+            '4Kfill_651_OFF':[
+                'HE4:AV203:STATON',
+                'HE4:BP201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            '1Kfill_652_ON':[
+                'HE4:AV201:STATON',
+                'HE4:AV202:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:FPV204:STATON',
+                'HE4:FPV205:STATON',
+                'HE4:FPV206:STATON',
+                'HE4:FPV207:STATON',
+                'HE4:FPV208:STATON',
+                'HE4:FPV209:STATON',
+                'HE4:FPV211:STATON',
+                'HE4:FPV211:STAT.B8',
+                'HE4:FPV212:STATON',
+                'HE4:HTR206:STATLOC',
+                'HE4:HTR207:STATLOC',
+                'HE4:HTR208:STATLOC',
+                'HE4:HTR209:STATLOC',
+                'HE4:HTR210:STATLOC',
+                'HE4:HTR211:STATLOC',
+                'HE4:HTR212:STATLOC',
+                'HE4:HTR213:STATLOC',
+                'HE4:HTR214:STATLOC',
+                'HE4:GV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            '1Kfill_652_OFF':[
+                'HE4:AV203:STATON',
+                ],
+            '3Hebypass_653_ON':[
+                'HE3:AV108:STATON',
+                'HE3:AV125:STATON',
+                'HE3:AV126:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV135:STATON',
+                'HE3:AV136:STATON',
+                'HE3:BP101:STATON',
+                'HE3:BP102:STATON',
+                'HE3:FPV101:STATON',
+                'HE3:GV101:STATON',
+                'HE3:GV102:STATON',
+                'HE3:MFC101:STATON',
+                'HE3:MP101:STATON',
+                'HE3:MP102:STATON',
+                ],
+            '3Hebypass_653_OFF':[
+                'HE3:AV102:STATON',
+                'HE3:AV104:STATON',
+                'HE3:AV105:STATON',
+                'HE3:AV106:STATON',
+                'HE3:AV109:STATON',
+                'HE3:AV107:STATON',
+                'HE3:AV110:STATON',
+                'HE3:AV111:STATON',
+                'HE3:AV112:STATON',
+                'HE3:AV113:STATON',
+                'HE3:AV114:STATON',
+                'HE3:AV122:STATON',
+                'HE3:AV123:STATON',
+                'HE3:AV124:STATON',
+                'HE3:AV127:STATON',
+                'HE3:AV129:STATON',
+                'HE3:AV130:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'HE3:BP103:STATON',
+                'HE3:MP103:STATON',
+                'HE3:PV101:STATON',
+                'HE3:TP101:STATON',
+                ],
+            'IsoPrecool_654_ON':[
+                'HE3:CP101:STATON',
+                'ISO:AV001:STATON',
+                'ISO:AV002:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV032:STATON',
+                'ISO:CP001:STATON',
+                'ISO:BP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            'IsoPrecool_654_OFF':[
+                'HE3:AV111:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:HTR005:STATON',
+                'ISO:HTR007:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR010:STAT.B8',
+                'ISO:HTR012:STATON',
+                'ISO:HTR012:STAT.B8',
+                ],
+            'IsoCondense_655_ON':[
+                'HE3:CP101:STATON',
+                'ISO:AV002:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV032:STATON',
+                'ISO:CP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            'IsoCondense_655_OFF':[
+                'ISO:AV001:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:BP001:STATON',
+                'ISO:HTR005:STATON',
+                'ISO:HTR007:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR010:STAT.B8',
+                'ISO:HTR012:STATON',
+                'ISO:HTR012:STAT.B8',
+                'ISO:MP002:STATON',
+                ],
+            'iso_recovery_681_ON':[
+                'HE3:CP101:STATON',
+                'ISO:AV001:STATON',
+                'ISO:AV002:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV028:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV032:STATON',
+                'ISO:CP001:STATON',
+                'ISO:BP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:MP002:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            'iso_recovery_681_OFF':[
+                'ISO:AV008:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:HTR005:STATON',
+                'ISO:HTR007:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR010:STAT.B8',
+                'ISO:HTR012:STATON',
+                'ISO:HTR012:STAT.B8',
+                ],
+            'iso_recovery_681_end_ON':[
+                'HE3:CP101:STATON',
+                'ISO:AV002:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV032:STATON',
+                'ISO:CP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:IG001:STATON',
+                'ISO:IG002:STATON',
+                'ISO:IV001:STATON',
+                'ISO:PV001:STATON',
+                'ISO:PV002:STATON',
+                'ISO:MFC001:STATON',
+                'ISO:TP001:STATON',
+                'ISO:TP002:STATON',
+                ],
+            'iso_recovery_681_end_OFF':[
+                'ISO:AV001:STATON',
+                'ISO:AV003:STATON',
+                'ISO:AV004:STATON',
+                'ISO:AV007:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV012:STATON',
+                'ISO:AV014:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV028:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:BP001:STATON',
+                'ISO:HTR005:STATON',
+                'ISO:HTR007:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR010:STAT.B8',
+                'ISO:HTR012:STATON',
+                'ISO:HTR012:STAT.B8',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                ],
+            '3he_recovery_682_ON':[
+                'HE3:AV106:STATON',
+                'HE3:AV107:STATON',
+                'HE3:AV109:STATON',
+                'HE3:AV110:STATON',
+                'HE3:AV111:STATON',
+                'HE3:AV113:STATON',
+                'HE3:AV114:STATON',
+                'HE3:AV125:STATON',
+                'HE3:AV126:STATON',
+                'HE3:AV127:STATON',
+                'HE3:AV128:STATON',
+                'HE3:AV131:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV135:STATON',
+                'HE3:AV136:STATON',
+                'HE3:BP101:STATON',
+                'HE3:BP102:STATON',
+                'HE3:GV101:STATON',
+                'HE3:GV102:STATON',
+                'HE3:MFC101:STATON',
+                'HE3:MP101:STATON',
+                'HE3:MP102:STATON',
+                'HE3:MP103:STATON',
+                ],
+            '3he_recovery_682_OFF':[
+                'HE3:AV102:STATON',
+                'HE3:AV104:STATON',
+                'HE3:AV105:STATON',
+                'HE3:AV108:STATON',
+                'HE3:AV112:STATON',
+                'HE3:AV122:STATON',
+                'HE3:AV123:STATON',
+                'HE3:AV124:STATON',
+                'HE3:AV129:STATON',
+                'HE3:AV130:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'HE3:BP103:STATON',
+                'HE3:FPV101:STATON',
+                'HE3:PV101:STATON',
+                'HE3:TP101:STATON',
+                ],
+            '3he_recovery_682_end_ON':[
+                'HE3:AV108:STATON',
+                'HE3:AV124:STATON',
+                'HE3:AV131:STATON',
+                'HE3:MFC101:STATON',
+                ],
+            '3he_recovery_682_end_OFF':[
+                'HE3:AV102:STATON',
+                'HE3:AV104:STATON',
+                'HE3:AV105:STATON',
+                'HE3:AV106:STATON',
+                'HE3:AV107:STATON',
+                'HE3:AV109:STATON',
+                'HE3:AV110:STATON',
+                'HE3:AV111:STATON',
+                'HE3:AV112:STATON',
+                'HE3:AV113:STATON',
+                'HE3:AV114:STATON',
+                'HE3:AV122:STATON',
+                'HE3:AV123:STATON',
+                'HE3:AV125:STATON',
+                'HE3:AV126:STATON',
+                'HE3:AV127:STATON',
+                'HE3:AV128:STATON',
+                'HE3:AV129:STATON',
+                'HE3:AV130:STATON',
+                'HE3:AV132:STATON',
+                'HE3:AV133:STATON',
+                'HE3:AV134:STATON',
+                'HE3:AV135:STATON',
+                'HE3:AV136:STATON',
+                'HE3:BP101:STATON',
+                'HE3:BP102:STATON',
+                'HE3:BP103:STATON',
+                'HE3:FPV101:STATON',
+                'HE3:GV101:STATON',
+                'HE3:GV102:STATON',
+                'HE3:MP101:STATON',
+                'HE3:MP102:STATON',
+                'HE3:MP103:STATON',
+                'HE3:PV101:STATON',
+                'HE3:TP101:STATON',
+                ],
+            '1Kempty_683_ON':[
+                'HE4:AV202:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:FPV204:STATON',
+                'HE4:FPV205:STATON',
+                'HE4:FPV206:STATON',
+                'HE4:FPV207:STATON',
+                'HE4:FPV208:STATON',
+                'HE4:FPV209:STATON',
+                'HE4:FPV211:STATON',
+                'HE4:FPV211:STAT.B8',
+                'HE4:FPV212:STATON',
+                'HE4:HTR206:STATLOC',
+                'HE4:HTR207:STATLOC',
+                'HE4:HTR208:STATLOC',
+                'HE4:HTR209:STATLOC',
+                'HE4:HTR210:STATLOC',
+                'HE4:HTR211:STATLOC',
+                'HE4:HTR212:STATLOC',
+                'HE4:HTR213:STATLOC',
+                'HE4:HTR214:STATLOC',
+                ],
+            '1Kempty_683_OFF':[
+                'HE4:AV201:STATON',
+                'HE4:AV203:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:GV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            '4Kempty_684_ON':[
+                'HE4:AV202:STATON',
+                'HE4:AV203:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:FPV204:STATON',
+                'HE4:FPV205:STATON',
+                'HE4:FPV206:STATON',
+                'HE4:FPV207:STATON',
+                'HE4:FPV208:STATON',
+                'HE4:FPV209:STATON',
+                'HE4:HTR206:STATLOC',
+                'HE4:HTR207:STATLOC',
+                'HE4:HTR208:STATLOC',
+                'HE4:HTR209:STATLOC',
+                'HE4:HTR210:STATLOC',
+                'HE4:HTR211:STATLOC',
+                'HE4:HTR212:STATLOC',
+                'HE4:HTR213:STATLOC',
+                'HE4:HTR214:STATLOC',
+                ],
+            '4Kempty_684_OFF':[
+                'HE4:AV201:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:FPV211:STATON',
+                'HE4:FPV211:STAT.B8',
+                'HE4:FPV212:STATON',
+                'HE4:GV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            '4Kempty_684_end_ON':[
+                'HE4:AV202:STATON',
+                'HE4:CRV201:STATON',
+                'HE4:HTR206:STATLOC',
+                'HE4:HTR207:STATLOC',
+                'HE4:HTR208:STATLOC',
+                'HE4:HTR209:STATLOC',
+                'HE4:HTR210:STATLOC',
+                'HE4:HTR211:STATLOC',
+                'HE4:HTR212:STATLOC',
+                'HE4:HTR213:STATLOC',
+                'HE4:HTR214:STATLOC',
+                ],
+            '4Kempty_684_end_OFF':[
+                'HE4:AV201:STATON',
+                'HE4:AV203:STATON',
+                'HE4:AV204:STATON',
+                'HE4:BP201:STATON',
+                'HE4:FPV201:STATON',
+                'HE4:FPV202:STATON',
+                'HE4:FPV203:STATON',
+                'HE4:FPV204:STATON',
+                'HE4:FPV205:STATON',
+                'HE4:FPV206:STATON',
+                'HE4:FPV207:STATON',
+                'HE4:FPV208:STATON',
+                'HE4:FPV209:STATON',
+                'HE4:FPV211:STATON',
+                'HE4:FPV211:STAT.B8',
+                'HE4:FPV212:STATON',
+                'HE4:GV201:STATON',
+                'HE4:MP201:STATON',
+                ],
+            'isopurify_isolation_ON':[],
+            'isopurify_isolation_OFF':[
+                'HE3:HTR105:STATON',
+                'HE3:HTR107:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV018:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV031:STATON',
+                'ISO:AV032:STATON',
+                'ISO:BP002:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR012:STATON',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                ],
+            'isopurify_purification_ON':[
+                'HE3:CP101:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV012:STATON',
+                'ISO:AV014:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV029:STATON',
+                'ISO:CP001:STATON',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                ],
+            'isopurify_purification_OFF':[
+                'HE3:HTR105:STATON',
+                'HE3:HTR107:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV018:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV031:STATON',
+                'ISO:AV032:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:BP002:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR012:STATON',
+                ],
+            'isopurify_regeneration_ON':[
+                'HE3:HTR105:STATON',
+                'HE3:HTR107:STATON',
+                'ISO:AV010:STATON',
+                'ISO:AV011:STATON',
+                'ISO:AV012:STATON',
+                'ISO:AV014:STATON',
+                'ISO:AV019:STATON',
+                'ISO:AV027:STATON',
+                'ISO:AV029:STATON',
+                'ISO:AV050:STATON',
+                'ISO:AV051:STATON',
+                'ISO:BP001:STATON',
+                'ISO:BP002:STATON',
+                'ISO:HTR010:STATON',
+                'ISO:HTR012:STATON',
+                'ISO:MP001:STATON',
+                'ISO:MP002:STATON',
+                ],
+            'isopurify_regeneration_OFF':[
+                'HE3:CP101:STATON',
+                'ISO:AV008:STATON',
+                'ISO:AV009:STATON',
+                'ISO:AV013:STATON',
+                'ISO:AV015:STATON',
+                'ISO:AV016:STATON',
+                'ISO:AV017:STATON',
+                'ISO:AV018:STATON',
+                'ISO:AV020:STATON',
+                'ISO:AV021:STATON',
+                'ISO:AV022:STATON',
+                'ISO:AV023:STATON',
+                'ISO:AV024:STATON',
+                'ISO:AV025:STATON',
+                'ISO:AV026:STATON',
+                'ISO:AV030:STATON',
+                'ISO:AV031:STATON',
+                'ISO:AV032:STATON',
+                'ISO:CP001:STATON',
+                ],
+            };
+
+        // list of all device IDs
+        var all_device_ids = [];
+
+        // initial table setup
+        // for some reason it was extra hard to write this as a function per table, so now it's all in one extra long function
+        function set_all_tables(){
+
+            // get list of equipments
+            mjsonrpc_send_request([
+                mjsonrpc_make_request("db_get_values",{"paths":equipments}),
+            ]).then(function (rpc) {
+
+                // dictionary of lists of devices, one per table displayed in web page
+                let lines = {};
+
+                // text for setting up main table divs
+                let table_text = '';
+
+                // initialize the dictionary and table divs for later row placement
+                for(let i=0;i<table_names.length;i++){
+                    lines[table_names[i]] = [];
+                    table_text += '<section><column1><div id ="' + table_names[i] + '"></column1></section>';
+                }
+                document.getElementById('AllTables').innerHTML = table_text;
+
+                // sort the devices from each equipment into the tables displayed in web page
+                for(let j=0;j<equipments.length;j++){
+
+                    // get list of device names from ODB settings names array
+                    let names = rpc[0].result.data[j].settings.names;
+
+                    // iterate over device names for sorting
+                    for(let k=0; k<names.length; k++){
+
+                        // we will only care about status devices
+                        if(names[k].includes('STATON') || names[k].includes('STAT.B8') || names[k].includes('STATLOC')){
+
+                            // get rid of common prefix (fixes row sorting)
+                            names[k] = names[k].replace('UCN2:', '').replace('UCN:', '').replace(' ', '');
+
+                            // make table cell with device label. div ID has pattern HE4:BP201:STATON
+                            let display_name = names[k].replace(':STATON', '');
+                            let name_cell = '<td><div id="'+names[k]+'">'+display_name+'</div></td>';
+
+                            // make table cell which will read ON/OFF. div ID has pattern HE4:BP201:STATON_FLAG
+                            let status_cell = '<td><div id="'+names[k]+'_FLAG"></td>';
+
+                            // save device id for later (row highlight on dropdown menu)
+                            all_device_ids.push(names[k]);
+
+                            // look for which table to put this row into
+                            let found = false;
+                            for(let i=0;i<table_names.length;i++){
+                                if(names[k].includes(table_names[i])){
+                                    // make the table row
+                                    lines[table_names[i]].push('<tr>' + name_cell + status_cell + '</tr>');
+                                    console.log(name_cell);
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            // found no matching table, put row into misc table
+                            if(!found){
+                                lines['Misc'].push('<tr>' + name_cell + status_cell + '</tr>');
+                            }
+                        }
+                    }
+                }
+
+                // make table text for each web page table
+                for(let i=0;i<table_names.length;i++){
+
+                    // sort each list alphabetically
+                    lines[table_names[i]].sort();
+
+                    // drop duplicates
+                    lines[table_names[i]] = [... new Set(lines[table_names[i]])];
+
+                    // setup table header lines
+                    let text = '<table class="mtable"><tr><th colspan="2" class="mtableheader">'+table_names[i]+'</th></tr>';
+                    text += '<tr> <th style="width: 75%"><b>Device</b></th> <th style="width: 25%"><b>Status</b></th> </tr>';
+
+                    // add each row to the table
+                    for(let j=0; j<lines[table_names[i]].length; j++){
+                        text += lines[table_names[i]][j];
+                    }
+
+                    // table footer
+                    text+= '</table>';
+
+                    // update webpage elements
+                    document.getElementById(table_names[i]).innerHTML = text;
+                }
+            }).catch(function(error) {
+                if (error.request) {
+                    var s = mjsonrpc_decode_error(error);
+                    console.log("mjsonrpc_error_alert: " + s);
+                } else {
+                    console.log("mjsonroc_error_alert: " + error);
+                }
+            });
+        }
+
+        // run periodic update on ON/OFF status. Iterate over all equipments
+        var gStatusInflight = false;
+        function statusPeriodicUpdate(){
+
+            // don't make another request if the last request is still outstanding.
+            if(gStatusInflight) return;
+            gStatusInflight = true;
+
+            // run update table on all equipment in list
+            for(let i=0; i<equipments.length; i++){
+                update_table(equipments[i]);
+            }
+
+            gStatusInflight = false;
+        }
+
+        // update ON/OFF status for a single equipment
+        function update_table(equip_name){
+
+            // get list of equipments
+            mjsonrpc_send_request([
+                    mjsonrpc_make_request("db_get_values",{"paths":[equip_name]}),
+                ]).then(function (rpc) {
+
+                    // iterate devices
+                    let names = rpc[0].result.data[0].settings.names;
+                    let values = rpc[0].result.data[0].variables.measured;
+
+                    for(let i=0; i<names.length; i++){
+
+                        // only look at status elements
+                        if(names[i].includes('STATON') || names[i].includes('STAT.B8') || names[i].includes('STATLOC')){
+
+                            // get rid of common prefixes (fixes sorting)
+                            names[i] = names[i].replace('UCN2:', '').replace('UCN:', '');
+
+                            // invert state for normally open values
+                            let state = values[i];
+                            if(inverted_devices.includes(names[i])){
+                                state = Math.abs(state-1);
+                                document.getElementById(names[i]).style.color = "#8e3d3e";
+                            }
+
+                            // set ON/OFF status
+                            if(state == 0){
+                                document.getElementById(names[i]+'_FLAG').innerHTML = "OFF";
+                                document.getElementById(names[i]+'_FLAG').style.background = "#f58282";
+                            } else if (state == 1){
+                                document.getElementById(names[i]+'_FLAG').innerHTML = "ON";
+                                document.getElementById(names[i]+'_FLAG').style.background = "#65f7ae";
+                            } else {
+                                document.getElementById(names[i]+'_FLAG').innerHTML = values[i];
+                            }
+
+                        }
+                    }
+                }).catch(function(error) {
+                    if (error.request) {
+                        var s = mjsonrpc_decode_error(error);
+                        console.log("mjsonrpc_error_alert: " + s);
+                    } else {
+                        console.log("mjsonroc_error_alert: " + error);
+                    }
+                });
+        }
+
+        // highlight table rows based on checkbox values
+        function checkbox_highlight(){
+
+            // reset all elements
+            for(let i=0; i<all_device_ids.length; i++){
+                document.getElementById(all_device_ids[i]).style.background = "none";   // color
+                document.getElementById(all_device_ids[i]).title = "none";              // state tracking (ON/OFF/conflict/none)
+            }
+
+            // get which groups of items to highlight
+            var checked = document.querySelectorAll('input[name=chkHigh]:checked');
+
+            let missing = [];   // missing devices list
+            let conflict = [];  // devices which are in conflict, one set wants ON the other wants OFF
+            let suffix = ['ON', 'OFF'];
+            let color = ['#c6edc4', '#edc4c9']; // pastel green and red
+            for(let k=0; k<suffix.length; k++){
+                for(let j=0; j<checked.length; j++){
+
+                    // highlight elements from group, save those which are missing for later printout
+                    let highlighted = operation_groups[checked[j].value + "_" + suffix[k]];
+                    for(let i=0; i<highlighted.length; i++){
+
+                        // if the following block fails, likely the device is missing
+                        try{
+                            // check if there is a state conflict i.e. one setup wants a device OFF another wants a device ON
+                            // use the title field to track this since different browsers will save colors in different formats
+                            let state = document.getElementById(highlighted[i]).title;
+                            let color_new = color[k];
+                            let state_new = suffix[k];
+
+                            if(state != 'none' && state != state_new){
+                                color_new = '#fc9323';
+                                state_new = 'conflict';
+                                conflict.push(highlighted[i]);
+                            }
+
+                            // set the color and state
+                            document.getElementById(highlighted[i]).style.background = color_new;
+                            document.getElementById(highlighted[i]).title = state_new;
+
+                        // device is missing
+                        }catch(err){
+                            missing.push(highlighted[i]);
+                            console.warn(highlighted[i] + ' is missing');
+                            console.error(err);
+                        }
+                    }
+                }
+            }
+
+            // missing device printout
+            document.getElementById('GroupErrors').innerHTML = '</br>';
+            let text = '';
+            if(missing.length > 0){
+                missing.sort();
+                missing = [...new Set(missing)];
+                text += 'Missing devices: ' + missing[0].replace(':STATON', '');
+                for(let i=1; i<missing.length; i++){
+                    text += ', ' + missing[i].replace(':STATON', '');
+                }
+            }
+
+            // newline
+            text += '</br>';
+
+            // set the missing and conflict messages in the web page
+            if(conflict.length > 0 || missing.length > 0){
+                document.getElementById('GroupErrors').innerHTML = text;
+            }
+        }
+    </script>
+</head>
+
+<body class="mcss" onload="mhttpd_init('DeviceStatus');set_all_tables();statusPeriodicUpdate();setInterval(statusPeriodicUpdate,2000)">
+
+    <!-- header and side navigation will be filled in mhttpd_start -->
+    <div id="mheader"></div>
+    <div id="msidenav"></div>
+    <div id="mmain">
+    <div id="full_div">
+
+        <!-- Checkboxes table -->
+        <table class="mtable">
+            <tr><th colspan="4" class="mtableheader">Stages of Cryostat Operation</th></tr>
+            <tr>
+                <th>Initial Pumping (6.2)</th>
+                <th>Gas Circulation (6.3)</th>
+                <th>Shutdown (6.8)</th>
+                <th>Cryostat as Purifier</th>
+            </tr>
+            <tr>
+                <td> <label><input name="chkHigh"
+                            type="checkbox"
+                            value="vacuum"
+                            onclick="checkbox_highlight()"> Insulation Vacuum (6.2.2)</input>
+                    </label>
+                </td>
+                <td> <label><input name="chkHigh"
+                            type="checkbox"
+                            value="warm3He_631"
+                            onclick="checkbox_highlight()"> Warm 3He (6.3.1)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="iso_recovery_681"
+                            onclick="checkbox_highlight()">Iso Recovery (6.8.1 - mid)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="purify_return"
+                             onclick="checkbox_highlight()">Purify Isopure (Return Flow)</input>
+                     </label>
+                </td>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="nat_he_pump_623"
+                             onclick="checkbox_highlight()">4He Pumping (6.2.3)</input>
+                     </label>
+                </td>
+                <td> <label><input name="chkHigh"
+                            type="checkbox"
+                            value="warmIso_633"
+                            onclick="checkbox_highlight()"> Warm Isopure (6.3.3)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                    type="checkbox"
+                    value="iso_recovery_681_end"
+                    onclick="checkbox_highlight()">Iso Recovery (6.8.1 - end)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="purify_input"
+                             onclick="checkbox_highlight()">Purify Isopure (Input Flow)</input>
+                     </label>
+                </td>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="1K_pump_624"
+                             onclick="checkbox_highlight()">1K pot Pumping (6.2.4)</input>
+                     </label>
+                </td>
+                <th>Cooldown (6.5)</th>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="3he_recovery_682"
+                            onclick="checkbox_highlight()">3He Recovery (6.8.2 - mid)</input>
+                            </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="purify_regen"
+                             onclick="checkbox_highlight()">Purify Isopure (Regen Flow)</input>
+                     </label>
+                </td>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="he3_pump_625"
+                            onclick="checkbox_highlight()">3He Pumping (6.2.5)</input>
+                     </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="4Kfill_651"
+                            onclick="checkbox_highlight()">4k Fill (6.5.1)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="3he_recovery_682_end"
+                            onclick="checkbox_highlight()">3He Recovery (6.8.2 - end)</input>
+                            </label>
+                        </td>
+                <th>Iso Purifier</th>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="iso_pump_626"
+                             onclick="checkbox_highlight()">Iso Pumping (6.2.6)</input>
+                     </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="1Kfill_652"
+                            onclick="checkbox_highlight()">1k Fill (6.5.2)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="1Kempty_683"
+                            onclick="checkbox_highlight()">1K Empty (6.8.3)</input>
+                            </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="isopurify_isolation"
+                            onclick="checkbox_highlight()">Isolation</input>
+                            </label>
+                </td>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="baking_627"
+                             onclick="checkbox_highlight()">Baking (6.2.7)</input>
+                     </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="3Hebypass_653"
+                            onclick="checkbox_highlight()">3He Panel Bypass (6.5.3)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="4Kempty_684"
+                            onclick="checkbox_highlight()">4K Empty (6.8.4 - mid)</input>
+                            </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="isopurify_purification"
+                            onclick="checkbox_highlight()">Purification</input>
+                            </label>
+                </td>
+            </tr>
+            <tr>
+                <td> <label><input  name="chkHigh"
+                             type="checkbox"
+                             value="backfill_629"
+                             onclick="checkbox_highlight()">4He Backfill (6.2.9)</input>
+                     </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="IsoPrecool_654"
+                            onclick="checkbox_highlight()">Iso Purifier Precool (6.5.4)</input>
+                    </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="4Kempty_684_end"
+                            onclick="checkbox_highlight()">4K Empty (6.8.4 - end)</input>
+                            </label>
+                </td>
+                <td> <label><input  name="chkHigh"
+                    type="checkbox"
+                    value="isopurify_regeneration"
+                    onclick="checkbox_highlight()">Regeneration</input>
+                    </label>
+        </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td> <label><input  name="chkHigh"
+                            type="checkbox"
+                            value="IsoCondense_655"
+                            onclick="checkbox_highlight()">Iso Condensation (6.5.5)</input>
+                    </label>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <div id="GroupErrors"></br></div>
+
+        <!-- Device Tables -->
+        <div id='AllTables'>
+    </div>
+</body>
+</html>

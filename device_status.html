@@ -1040,9 +1040,9 @@
             }).catch(function(error) {
                 if (error.request) {
                     var s = mjsonrpc_decode_error(error);
-                    console.log("mjsonrpc_error_alert: " + s);
+                    console.log("[device status] mjsonrpc_error_alert: " + s);
                 } else {
-                    console.log("mjsonroc_error_alert: " + error);
+                    console.log("[device status] mjsonroc_error_alert: " + error);
                 }
             });
         }
@@ -1106,9 +1106,9 @@
                 }).catch(function(error) {
                     if (error.request) {
                         var s = mjsonrpc_decode_error(error);
-                        console.log("mjsonrpc_error_alert: " + s);
+                        console.log("[device status] mjsonrpc_error_alert: " + s);
                     } else {
-                        console.log("mjsonroc_error_alert: " + error);
+                        console.log("[device status] mjsonroc_error_alert: " + error);
                     }
                 });
         }

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html class="mcss">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="midas.css">
+    <script src="controls.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="midas.js"></script>
+    <script src="mhttpd.js"></script>
+
+    <title>Quick Links</title>
+
+    <style>
+        body {
+        padding: 20px;
+        padding-left: 40px;
+        }
+
+        div.overflowspandiv{
+        width: 98%;
+        max-width: 98%;
+        }
+
+        table.mtable {
+        width: 100%;
+        }
+
+        td{
+        min-width: 100px;
+        }
+
+        /* hover table col and row */
+        td:hover {background-color: #D6EEEE;}
+    </style>
+</head>
+
+<body class="mcss" onload="mhttpd_init('Quick Links')">
+    <!-- header and side navigation will be filled in mhttpd_start -->
+    <div id="mheader"></div>
+    <div id="msidenav"></div>
+    <div id="mmain">
+    <div id="full_div">
+
+    <h1>Quick Links</h1>
+
+    <table class="mtable">
+        <tr>
+            <th class="mtableheader">Spreadsheets</th>
+            <th class="mtableheader">Monitoring</th>
+            <th class="mtableheader">Documentation</th>
+            <th class="mtableheader">URC Reports</th>
+        </tr>
+        <tr>
+            <td><a target="_blank" href="https://docs.google.com/spreadsheets/d/1hnOANGd1ZejgcsFwPFeLI69gHmMfTWKsQUhD0CdW1RQ/edit?usp=sharing">Shift Schedule</a></td>
+            <td><a target="_blank" href="setonshift.html">Phone Notifications</a></td>
+            <td><a target="_blank" href="https://www.overleaf.com/project/6601d03d67638e255a5ee692">Source Manual</a></td>
+            <td><a target="_blank" href="https://www.overleaf.com/project/683393a41373f07510418fea">2025 6A</a></td>
+        </tr>
+        <tr>
+            <td><a target="_blank" href="https://docs.google.com/spreadsheets/d/1JO5ES_38Vi8Y0jEL1xbMspf-eSXKEbQYQA2K4aT4YZE/edit?usp=sharing">Shift Goals</a></td>
+            <td><a target="_blank" href="https://driverdisplays.triumf.ca/1uq">BL1U Optics</a></td>
+            <td><a target="_blank" href="https://www.overleaf.com/9758998243dmhrqcqsgfpj#54fd02">LD2 Manual</a></td>
+            <td><a target="_blank" href="https://www.overleaf.com/6236613629mdbchtjdfnwt#86d70b">2025 7A</a></td>
+        </tr>
+        <tr>
+            <td><a target="_blank" href="https://docs.google.com/spreadsheets/d/1RGfM46hYnG_FCzsXfYh5-abXI0JGuQ-asNqmH656xKQ/edit?gid=883214371#gid=883214371">TCN Experiments 2025</a></td>
+            <td><a target="_blank" href="device_status.html">Device status</a></td>
+            <td><a target="_blank" href="TNS0354.R42.pdf">Sensor diagram</a></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a target="_blank" href="https://docs.google.com/spreadsheets/d/1XZKLCYx1hbCL9IprET8ejswfMtpwxIvMH9ZkomBUOO0/edit?gid=2093170057#gid=2093170057">Source Data Record</a></td>
+            <td><a target="_blank" href="http://142.90.126.123/CgiStart?page=Single&Resolution=640x480&Quality=Standard&RPeriod=0&Size=STD&PresetOperation=Move&Language=0">Liquifier filter light webcam (only the bottom light should be on)</a></td>
+            <td><a target="_blank" href="TNS0362.R25.pdf">Flow diagram</a></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a target="_blank" href="https://docs.google.com/spreadsheets/d/1cguGTJseRPwugzmHmRnlhKoFZU4LIulD1Jv2bFTXel0/edit?gid=15994532#gid=15994532">TCNXA-XXX</a></td>
+            <td><a target="_blank" href="liquid_production/liquid_prod_rate.html">Liquifier Production</a></td>
+            <td><a target="_blank" href="https://www.overleaf.com/project/67fd2e430e4077f3c35f91df">TUCAN Experiment Details</a></td>
+            <td></td>
+        </tr>
+        <tr></tr>
+
+    </table>
+
+    <br>
+    Coming soon:<br>
+    <a target="_blank" href="UCNsearch/web/index.html">Run Search</a><br>
+    <a target="_blank" href="shiftschedule.html">Shift Schedule 2</a><br>
+
+    <br>
+    Depreciated:<br>
+    <a target="_blank" href="https://docs.google.com/document/d/1LRQlsMZbr5SYsAjUSLKziBpMXtfjm_aOBifmE7Wby7o/edit#heading=h.s9xlf1ne9l1e">Old Source Manual</a><br>
+    <a target="_blank" href="experiment_config.html">Experiment Notes</a><br>
+
+</body>
+</html>

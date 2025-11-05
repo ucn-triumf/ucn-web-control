@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="mcss">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="midas.css">
+    <script src="controls.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="midas.js"></script>
+    <script src="mhttpd.js"></script>
+
+    <title>Phone Notifications</title>
+
+    <style>
+        body {
+        padding: 20px;
+        padding-left: 40px;
+        }
+
+        div.overflowspandiv{
+        width: 98%;
+        max-width: 98%;
+        }
+
+        table.mtable {
+        width: 100%;
+        }
+
+        td{
+        min-width: 100px;
+        }
+
+        /* Frozen first column */
+        table.mtable td:nth-child(1), th{
+        position: sticky;
+        left: 0; /* Ensures the column stays on the left */
+        z-index: 50; /* Keeps the column above other cells */
+        background-color: #8bc0fd;
+        color: #f4f6f7;
+        width: 100px;
+        }
+
+        /* hover table col and row */
+        td:hover {background-color: #D6EEEE;}
+
+        /* dropdown menus */
+        .dropbtn {
+        border: none;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        width: 100%;
+        height: 100%;
+        }
+
+        .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        max-height: 300px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        overflow-y: auto;
+        }
+
+        .dropdown-content div {
+        color: black;
+        padding: 15px;
+        padding-top: 5px;
+        padding-bottom: 10px;
+        text-decoration: none;
+        display: block;
+        height: 10px;
+        }
+
+        .dropdown-content div:hover {background-color: #D6EEEE;}
+
+        .dropdown:hover .dropdown-content {display: block;}
+
+        .dropdown:hover .dropbtn {background-color: #D6EEEE;}
+
+    </style>
+
+    <script>
+
+        async function setup(){
+
+            // get list of defined shifters
+            let data = await mjsonrpc_db_get_values(["/Shifts/messagebird/Name",
+                                                      "/Shifts/messagebird/OnShiftNow",
+                                                      "/Shifts/messagebird/URC",
+                                                      "/Shifts/messagebird/VIP"]);
+
+            // get and sort names
+            let names = data.result.data[0];
+            names.sort();
+
+            let listnames = ['onshiftnow', 'urcnow', 'vipnow'];
+
+            for(let listi=0; listi<listnames.length; listi++){
+                let dropdown = document.getElementById(listnames[listi]);
+
+                // add dropdown items
+                for(let namei=0; namei<names.length; namei++){
+
+                    if(names[namei] != ""){
+                        let option = document.createElement("option");
+                        option.text = names[namei];
+                        option.value = names[namei];
+                        option.class = 'nameOption';
+
+                        dropdown.appendChild(option);
+                    }
+                }
+
+                // set to currently on shift
+                dropdown.value = data[listi+1];
+            }
+        }
+    </script>
+</head>
+
+<body class="mcss" onload="mhttpd_init('messagebird'); setup()">
+    <!-- header and side navigation will be filled in mhttpd_start -->
+    <div id="mheader"></div>
+    <div id="msidenav"></div>
+    <div id="mmain">
+    <div id="full_div">
+
+    <h1>Phone Notifications</h1>
+
+    <!-- -------------------------------------- -->
+    In the case of a MIDAS alarm, a phone call will be placed to:
+    <br>
+    <br>
+    <table>
+        <tr>
+            <td>The shifter,</td>
+            <td>
+                <select class="modbselect" data-odb-path="/Shifts/messagebird/shifter" id="onshiftnow">
+                    <option></option>
+                </select>,
+            </td>
+            <td>
+                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/shifter_delay_s" data-odb-editable="1"></span> seconds;
+            </td>
+        </tr>
+        <tr>
+            <td>the URC,</td>
+            <td>
+                <select class="modbselect" data-odb-path="/Shifts/messagebird/urc" id="urcnow">
+                    <option></option>
+                </select>,
+            </td>
+            <td>
+                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/urc_delay_s" data-odb-editable="300"></span> seconds;
+            </td>
+        </tr>
+        <tr>
+            <td>the Ruediger,</td>
+            <td>
+                <select class="modbselect" data-odb-path="/Shifts/messagebird/vip" id="vipnow">
+                    <option></option>
+                </select>,
+            </td>
+            <td>
+                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/vip_delay_s" data-odb-editable="900"></span> seconds;
+            </td>
+        </tr>
+    </table>
+    <br>
+    if the alarm hasn't been reset before then.
+
+    <!-- -------------------------------------- -->
+    <hr>
+    <h2>Setup and Testing</h2>
+
+    The call will originate from +1 226-458-8892. Please enter this as a contact in your phone, and make sure the call will bypass the do not disturb on your phone.
+    <br>
+    <a href="https://daq01.ucn.triumf.ca/?cmd=ODB&odb_path=%2FShifts%2Fmessagebird">Add your name and phone number to the ODB to be selectable as a shifter</a>
+    <br>
+    <br>
+    Please test that the script works the first few times you use this system. Note that the test uses the same timings as defined at the top of this page.
+    <br>
+    <br>
+    <button class="modbbutton mbutton" data-odb-path="/Alarms/Alarms/testalarm/Active" data-odb-value="1">Activate Test Alarm</button>
+    <button class="modbbutton mbutton" data-odb-path="/Alarms/Alarms/testalarm/Active" data-odb-value="0">Deactivate Test Alarm</button>
+    <button class="modbbutton mbutton" data-odb-path="/Alarms/Alarms/testalarm/Triggered" data-odb-value="0">Reset Test Alarm</button>
+    <br>
+    <br>
+    <table>
+        <tr>
+            <td>Alarm active</td>
+            <td>Alarm triggered</td>
+        </tr>
+        <tr>
+            <td><div class="modbbox" data-odb-path="/Alarms/Alarms/testalarm/Active" data-formula="x" style="width: 30px; height: 30px; border: 1px solid black" data-color="lightgreen" data-background-color="red"></div></td>
+            <td><div class="modbbox" data-odb-path="/Alarms/Alarms/testalarm/Triggered" data-formula="x==1" style="width: 30px; height: 30px; border: 1px solid black" data-color="lightgreen" data-background-color="red"></div></td>
+        </tr>
+    </table>
+    <br>
+    <!-- -------------------------------------- -->
+    <hr>
+    <h2>Emergency Contacts</h2>
+    <table>
+        <tr>
+            <td>Ruediger Picker (cell)</td>
+            <td>604-352-0820</td>
+        </tr>
+        <tr>
+            <td>Ruediger Picker (home)</td>
+            <td>604-484-1830</td>
+        </tr>
+        <tr>
+            <td>Alexis Brossard</td>
+            <td>613-328-9547</td>
+        </tr>
+        <tr>
+            <td>Sean Vanbergen</td>
+            <td>250-218-8091</td>
+        </tr>
+        <tr>
+            <td>Eric Miller</td>
+            <td>778-888-5106</td>
+            <td>[URC]</td>
+        </tr>
+        <tr>
+            <td>Derek Fujimoto</td>
+            <td>778-873-0054</td>
+        </tr>
+    </table>
+
+</body>
+</html>

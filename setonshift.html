@@ -27,6 +27,7 @@
 
         td{
         min-width: 100px;
+        padding-right: 10px;
         }
 
         /* Frozen first column */
@@ -85,35 +86,84 @@
         async function setup(){
 
             // get list of defined shifters
-            let data = await mjsonrpc_db_get_values(["/Shifts/messagebird/Name",
-                                                      "/Shifts/messagebird/OnShiftNow",
-                                                      "/Shifts/messagebird/URC",
-                                                      "/Shifts/messagebird/VIP"]);
+            let data = await mjsonrpc_db_ls(["/Shifts/ContactInfo"]);
 
             // get and sort names
-            let names = data.result.data[0];
+            let contacts = data.result.data[0];
+            let names = Object.keys(contacts);
             names.sort();
 
-            let listnames = ['onshiftnow', 'urcnow', 'vipnow'];
+            // get onshift shifters
+            data = await mjsonrpc_db_get_values(['Shifts/Settings/onshift_names',
+                                                 'Shifts/Settings/onshift_shiftid',
+                                                 'Shifts/ShiftSetup/shiftids',
+                                                 'Shifts/ShiftSetup/name',
+                                                 'Shifts/messagebird/vip'
+                                                ]);
+            data = data.result.data;
+            let onshift_names =     data[0];
+            let onshift_shiftid =   data[1];
+            let shiftids =          data[2];
+            let shiftnames =        data[3];
+            let vip_name =          data[4];
 
-            for(let listi=0; listi<listnames.length; listi++){
-                let dropdown = document.getElementById(listnames[listi]);
+            // fix shiftnames
+            for(let i=0; i<shiftnames.length; i++){
+                shiftnames[i] = shiftnames[i].replace('<br>', ' ');
+                shiftnames[i] = shiftnames[i].replace('</br>', ' ');
+            }
 
-                // add dropdown items
-                for(let namei=0; namei<names.length; namei++){
+            // ensure onshift items are arrays
+            if(typeof(onshift_names) == 'string'){
+                onshift_names = Array(onshift_names);
+                onshift_shiftid = Array(onshift_shiftid);
+            }
 
-                    if(names[namei] != ""){
-                        let option = document.createElement("option");
-                        option.text = names[namei];
-                        option.value = names[namei];
-                        option.class = 'nameOption';
+            // make onshift table row
+            let table = document.getElementById('onshiftnow');
 
-                        dropdown.appendChild(option);
-                    }
+            // onshift names
+            for(let i=0; i<onshift_names.length; i++){
+
+                let row = table.insertRow();    
+                let cell = row.insertCell();
+
+                // onshift title
+                if(i==0){
+                    cell.innerText = 'On-shift shifters';
+                    cell.style.rowspan = onshift_names.length;
+                } 
+
+                // shift name
+                let shift_index = shiftids.indexOf(onshift_shiftid[i]);
+                cell = row.insertCell();
+                cell.innerText = shiftnames[shift_index];
+
+                // shifter name
+                cell = row.insertCell();
+                cell.innerText = onshift_names[i];
+
+                // delay
+                cell = row.insertCell();
+                cell.innerHTML = `after <span class='modbvalue' 
+                                              data-odb-editable='1' 
+                                              data-odb-path='/Shifts/ShiftSetup/notify_delay_mins[${shift_index}]'></span> mins`;
+
+            }
+            
+            let dropdown = document.getElementById('vipnow');
+
+            // add dropdown items
+            for(let namei=0; namei<names.length; namei++){
+
+                if(names[namei] != ""){
+                    let option = document.createElement("option");
+                    option.text = names[namei];
+                    option.value = names[namei];
+                    option.class = 'nameOption';
+
+                    dropdown.appendChild(option);
                 }
-
-                // set to currently on shift
-                dropdown.value = data[listi+1];
             }
         }
     </script>
@@ -133,37 +183,17 @@
     <br>
     <br>
     <table>
+        <tbody id="onshiftnow"></tbody>
         <tr>
-            <td>The shifter,</td>
-            <td>
-                <select class="modbselect" data-odb-path="/Shifts/messagebird/shifter" id="onshiftnow">
-                    <option></option>
-                </select>,
-            </td>
-            <td>
-                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/shifter_delay_s" data-odb-editable="1"></span> seconds;
-            </td>
-        </tr>
-        <tr>
-            <td>the URC,</td>
-            <td>
-                <select class="modbselect" data-odb-path="/Shifts/messagebird/urc" id="urcnow">
-                    <option></option>
-                </select>,
-            </td>
-            <td>
-                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/urc_delay_s" data-odb-editable="300"></span> seconds;
-            </td>
-        </tr>
-        <tr>
-            <td>the Ruediger,</td>
+            <td>Last resort</td>
+            <td></td>
             <td>
                 <select class="modbselect" data-odb-path="/Shifts/messagebird/vip" id="vipnow">
                     <option></option>
-                </select>,
+                </select>
             </td>
             <td>
-                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/vip_delay_s" data-odb-editable="900"></span> seconds;
+                after <span name="modbvalue" data-odb-path="/Shifts/messagebird/vip_delay_min" data-odb-editable="1"></span> mins;
             </td>
         </tr>
     </table>
@@ -176,8 +206,8 @@
 
     The call will originate from +1 226-458-8892. Please enter this as a contact in your phone, and make sure the call will bypass the do not disturb on your phone.
     <br>
-    <a href="https://daq01.ucn.triumf.ca/?cmd=ODB&odb_path=%2FShifts%2Fmessagebird">Add your name and phone number to the ODB to be selectable as a shifter</a>
-    <br>
+    <!-- <a href="https://daq01.ucn.triumf.ca/?cmd=ODB&odb_path=%2FShifts%2Fmessagebird">Add your name and phone number to the ODB to be selectable as a shifter</a> -->
+    <!-- <br> -->
     <br>
     Please test that the script works the first few times you use this system. Note that the test uses the same timings as defined at the top of this page.
     <br>
@@ -217,7 +247,6 @@
         <tr>
             <td>Sean Vanbergen</td>
             <td>250-218-8091</td>
-            <td>[URC]</td>
         </tr>
         <tr>
             <td>Eric Miller</td>

@@ -57,13 +57,21 @@ async function init_period_table(detector){
 
     cell = row.insertCell();
     cell.className = "mtableheader";
+    cell.innerText = 'Cycle Number';
+
+    cell = row.insertCell();
+    cell.className = "mtableheader";
     cell.innerText = 'UCN Counts Per Period';
     cell.colSpan = '10';
     
     // title row
     row = table.insertRow();
+    
     cell = row.insertCell();
-    cell.style.width = '250px'; 
+    cell.style.width = '200px'; 
+    
+    cell = row.insertCell();
+    cell.style.width = '50px'; 
 
     for(let i=0; i<10; i++){
     cell = row.insertCell();
@@ -84,6 +92,11 @@ async function init_period_table(detector){
     div.style.textAlign = 'center';
     div.setAttribute('data-odb-path', `/Analyzer/${detector}/CycleStartTimes[${9-i}]`);
     cell.appendChild(div);
+
+    // id
+    cell = row.insertCell();
+    cell.id = `cycle_id_${detector}_row${i}`;
+    cell.style.textAlign = 'center';
 
     // counts
     for(let j=0; j<10; j++){

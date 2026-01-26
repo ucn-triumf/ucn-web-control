@@ -68,10 +68,10 @@ async function init_period_table(detector){
     row = table.insertRow();
     
     cell = row.insertCell();
-    cell.style.width = '200px'; 
+    cell.style.width = '150px'; 
     
     cell = row.insertCell();
-    cell.style.width = '50px'; 
+    cell.style.width = '150px'; 
 
     for(let i=0; i<10; i++){
     cell = row.insertCell();

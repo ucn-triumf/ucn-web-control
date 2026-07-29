@@ -35,19 +35,20 @@
     names.sort();
 
     // get onshift shifters
-    data = await mjsonrpc_db_get_values(['Shifts/Settings/onshift_names',
-                                          'Shifts/Settings/onshift_shiftid',
-                                          'Shifts/ShiftSetup/shiftids',
-                                          'Shifts/ShiftSetup/name',
-                                          'Shifts/messagebird/vip'
+    data = await mjsonrpc_db_get_values([ '/Shifts/Variables/onshift_names',
+                                          '/Shifts/Variables/onshift_shiftid',
+                                          '/Shifts/ShiftSetup/shiftids',
+                                          '/Shifts/ShiftSetup/name',
+                                          '/Shifts/messagebird/vip'
                                         ]);
     data = data.result.data;
+    
     let onshift_names =     data[0];
     let onshift_shiftid =   data[1];
     let shiftids =          data[2];
     let shiftnames =        data[3];
     let vip_name =          data[4];
-
+    console.log(onshift_shiftid)
     // fix shiftnames
     for(let i=0; i<shiftnames.length; i++){
       shiftnames[i] = shiftnames[i].replace('<br>', ' ');
@@ -59,6 +60,7 @@
       onshift_names = Array(onshift_names);
       onshift_shiftid = Array(onshift_shiftid);
     }
+    
 
     // make onshift table row
     let table = document.getElementById('onshiftnow');
@@ -78,11 +80,19 @@
       // shift name
       let shift_index = shiftids.indexOf(onshift_shiftid[i]);
       cell = row.insertCell();
-      cell.innerText = shiftnames[shift_index];
+
+      if(shift_index >= 0){
+        cell.innerText = shiftnames[shift_index];
+      }
 
       // shifter name
       cell = row.insertCell();
       cell.innerText = onshift_names[i];
+
+      if(shift_index < 0){
+        cell.innerText = 'No one on shift';
+        continue;
+      }
 
       // delay
       cell = row.insertCell();

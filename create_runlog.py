@@ -13,6 +13,8 @@ T. Lindner
 Aug 2017
 
 Script adapted from examples from Lars Martin and Tom Feusels
+
+20240621 (D. Fujimoto): added run title
 """
 
 
@@ -103,17 +105,21 @@ class runlog:
     comment = "*NO COMMENT FIELD*"
     ucn_experiment = ""
     shifters = ""
+    title = ""
     if "Edit on start" in odb['Experiment']:
-      comment = odb['Experiment']['Edit on start']['Comment']
+      if "Comment" in odb['Experiment']['Edit on start']:
+        comment = odb['Experiment']['Edit on start']['Comment']
       if "Experiment number" in odb['Experiment']['Edit on start']:
         ucn_experiment = odb['Experiment']['Edit on start']['Experiment number']
       if "Shifters" in odb['Experiment']['Edit on start']:
         shifters = odb['Experiment']['Edit on start']['Shifters']
+      if "Run Title" in odb['Experiment']['Edit on start']:
+        title = odb['Experiment']['Edit on start']['Run Title']
 
     htmlfile.write("<tr>")
     self.writecolumn(htmlfile,txtfile,str(run_number))
     self.writecolumn(htmlfile,txtfile,str(start_time))
-    #self.writecolumn(htmlfile,txtfile,str(stop_time))
+    self.writecolumn(htmlfile,txtfile,str(stop_time))
     self.writecolumn(htmlfile,txtfile,beamline_enabled)
     self.writecolumn(htmlfile,txtfile,str(round(beamon_time,2)))
     self.writecolumn(htmlfile,txtfile,str(valveopen_time))
@@ -121,6 +127,7 @@ class runlog:
     self.writecolumn(htmlfile,txtfile,str(li6_events))
     self.writecolumn(htmlfile,txtfile,ucn_experiment)
     self.writecolumn(htmlfile,txtfile,shifters)
+    self.writecolumn(htmlfile,txtfile,title)
     self.writecolumn(htmlfile,txtfile,comment)
     htmlfile.write("</tr>\n")
 
@@ -146,7 +153,7 @@ class runlog:
 
 
     seen_datadirs = []
-    data_dir = "/data/ucn/midas_files/"
+    data_dir = "/data3/ucn/midas_files/"
     print "done"
     os.chdir(data_dir)
     print "done2"

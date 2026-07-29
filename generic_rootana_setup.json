@@ -34,10 +34,28 @@
 			   "UCN Hits with this cycle" : "hitsinsequence_he3",
 			   "UCN Hits per cycle" : "hits_per_cycle_he3"}		       	
     },
-    "V1720 Details" : { 
-	"MaxChannels" : 8,
+    "V1725 QL" : { 
+	"MaxChannels" : 16,
 	"MaxModules" : 2,
-	"WebserverName" : "V1720PSDQL"
+	"WebserverName" : "TV1725_QL"
+    },
+    "V1725 PSD vs QL" : { 
+	"MaxChannels" : 16,
+	"MaxModules" : 2,
+	"WebserverName" : "V1725PSD_VS_QL"
+    },
+    "V1725 Waveform" : { 
+	"MaxChannels" : 16,
+	"WebserverName" : "V1725"
+    },
+    "V1730 Waveform" : { 
+	"MaxChannels" : 8,
+	"WebserverName" : "V1730"
+    },
+    "DisplaySettings" : {
+	"DisplayStyle" : "root",
+	"UpdatePeriod" : 1000
     }
+
 
 } 

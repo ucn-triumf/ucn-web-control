@@ -68,7 +68,7 @@ async function init_period_table(detector){
     row = table.insertRow();
     
     cell = row.insertCell();
-    cell.style.width = '150px'; 
+    cell.style.width = '200px'; 
     
     cell = row.insertCell();
     cell.style.width = '150px'; 
